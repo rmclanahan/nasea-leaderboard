@@ -222,7 +222,7 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
 # -----------------------
 st.title("🥚 NASEA Re-entry Leaderboard 🥚")
 st.markdown(
-    "<div class='nasea-caption'>Lowest score wins. Scores shown as familiar large numbers in $ (even though teams enter cost in $K). Updates automatically.</div>",
+    "<div class='nasea-caption'>Lowest score wins.</div>",
     unsafe_allow_html=True,
 )
 
