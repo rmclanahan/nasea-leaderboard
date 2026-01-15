@@ -5,6 +5,41 @@ import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
+def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Converts Google Form / CSV column headers into a stable internal schema.
+
+    Expected Google Form fields:
+    - Team Name
+    - Supply Cost in $
+    - Outcome
+    - EM Questions Completed
+    """
+
+    # Preferred path: headers match form field names
+    column_map = {
+        "Team Name": "team_name",
+        "Supply Cost in $": "cost",
+        "Outcome": "outcome",
+        "EM Questions Completed": "em_completed",
+    }
+
+    if all(col in df.columns for col in column_map.keys()):
+        out = df[list(column_map.keys())].copy()
+        return out.rename(columns=column_map)
+
+    # Fallback path: assume standard Google Form order with Timestamp first
+    # [Timestamp, Team Name, Supply Cost in $, Outcome, EM Questions Completed]
+    if len(df.columns) >= 5:
+        out = df.iloc[:, 1:5].copy()
+        out.columns = ["team_name", "cost", "outcome", "em_completed"]
+        return out
+
+    # If neither works, fail loudly with helpful info
+    raise ValueError(
+        f"Could not normalize columns. Found columns: {list(df.columns)}"
+    )
+
 # -----------------------
 # Config
 # -----------------------
@@ -31,7 +66,7 @@ def compute_score(cost: float, outcome: str, em_completed: str) -> float:
     refund = 10_000 if str(em_completed).strip().lower() in {"yes", "y", "true"} else 0
     return float(cost) + penalty - refund
 
-def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+
     """
     Handles common Google Form response shapes:
     - Timestamp column present
