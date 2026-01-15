@@ -71,7 +71,7 @@ refresh_count = st_autorefresh(interval=5000, limit=None, key="nasea_refresh")
 
 # Display settings
 TOP_N = 20
-PAGE_SIZE = 15  # rows per "All Teams" page
+PAGE_SIZE = 20  # rows per "All Teams" page
 
 
 # -----------------------
@@ -108,29 +108,20 @@ data["rank"] = range(1, len(data) + 1)
 data["status"] = data["outcome"].map(outcome_badge)
 
 # -----------------------
-# Layout
+# Layout (Single scrolling list)
 # -----------------------
 last_updated = datetime.now().strftime("%H:%M:%S")
 st.write(f"**Last updated:** {last_updated}  •  **Total entries:** {len(data)}")
 
-left, right = st.columns([1.2, 1])
+total_pages = max(1, math.ceil(len(data) / PAGE_SIZE))
 
-with left:
-    st.subheader(f"🏆 Top {min(TOP_N, len(data))}")
-    top = data.head(TOP_N)[["rank", "team_name", "score", "status"]].copy()
-    top = top.rename(columns={"rank": "Rank", "team_name": "Team", "score": "Score", "status": "Status"})
-    st.dataframe(top, use_container_width=True, hide_index=True)
+# Rotate pages based on refresh_count so it scrolls automatically on the projector
+page = (refresh_count or 0) % total_pages
+start = page * PAGE_SIZE
+end = min(start + PAGE_SIZE, len(data))
 
-with right:
-    st.subheader("📜 All Teams (auto-scroll)")
-    total_pages = max(1, math.ceil(len(data) / PAGE_SIZE))
+view = data.iloc[start:end][["rank", "team_name", "score", "status"]].copy()
+view = view.rename(columns={"rank": "Rank", "team_name": "Team", "score": "Score", "status": "Status"})
 
-    page = (refresh_count or 0) % total_pages
-    start = page * PAGE_SIZE
-    end = min(start + PAGE_SIZE, len(data))
-
-    page_df = data.iloc[start:end][["rank", "team_name", "score", "status"]].copy()
-    page_df = page_df.rename(columns={"rank": "Rank", "team_name": "Team", "score": "Score", "status": "Status"})
-
-    st.caption(f"Showing ranks {start+1}–{end} of {len(data)} (page {page+1}/{total_pages})")
-    st.dataframe(page_df, use_container_width=True, hide_index=True)
+st.caption(f"Showing ranks {start+1}–{end} of {len(data)} (page {page+1}/{total_pages})")
+st.dataframe(view, use_container_width=True, hide_index=True)
