@@ -97,8 +97,11 @@ def esc_html(s: str) -> str:
 def render_leaderboard_table(df_view: pd.DataFrame) -> None:
     """
     Render a compact fixed-width table for projector display using an HTML component.
-    This avoids Streamlit escaping issues.
+    Uses conference colors + fonts:
+      - Raleway for headers
+      - Muli for body text
     """
+
     def esc(s: str) -> str:
         return (
             str(s)
@@ -142,14 +145,14 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
             overflow: hidden;
           }}
 
-         thead tr {
-          background: #125670; /* Dark blue */
-        }}
+          thead tr {{
+            background: {DARK_BLUE}; /* approved color (dark blue) */
+          }}
 
           th {{
             text-align: left;
             padding: 12px 14px;
-            border-bottom: 2px solid rgba(224, 228, 236, 0.25);
+            border-bottom: 3px solid {ORANGE}; /* orange accent */
             white-space: nowrap;
             font-family: 'Raleway', sans-serif;
             font-weight: 800;
@@ -177,7 +180,7 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
           }}
 
           td.score, th.score {{
-            width: 14ch;
+            width: 14ch; /* "$15,000,000" fits */
             text-align: right;
             font-variant-numeric: tabular-nums;
           }}
@@ -185,6 +188,10 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
           td.status, th.status {{
             width: 14ch;
             white-space: nowrap;
+          }}
+
+          td.team, th.team {{
+            width: auto;
           }}
         </style>
       </head>
@@ -208,6 +215,7 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
 
     # Height: enough for ~PAGE_SIZE rows at 24px font. Tune if needed.
     components.html(html, height=60 + (PAGE_SIZE * 46), scrolling=False)
+
 
 # -----------------------
 # Read data (Published CSV)
