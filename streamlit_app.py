@@ -52,14 +52,14 @@ def compute_score(cost: float, outcome: str, em_completed: str) -> float:
 
 
 def outcome_badge(outcome: str) -> str:
-    if outcome == "Survived":
+    o = str(outcome).strip().lower()
+    if o == "survived":
         return "✅ CLEARED"
-    if outcome == "Cracked":
+    if o == "cracked":
         return "⚖️ LITIGATION"
-    if outcome == "Broken":
+    if o == "broken":
         return "💸 F&F CLAIM"
-    return outcome
-
+    return str(outcome)
 
 # -----------------------
 # Config
@@ -67,7 +67,7 @@ def outcome_badge(outcome: str) -> str:
 st.set_page_config(page_title="NASEA Leaderboard", layout="wide")
 
 # Auto-refresh every 5 seconds
-refresh_count = st_autorefresh(interval=5000, limit=None, key="nasea_refresh")
+refresh_count = st_autorefresh(interval=15000, limit=None, key="nasea_refresh")
 
 # Display settings
 TOP_N = 20
@@ -80,7 +80,7 @@ PAGE_SIZE = 20  # rows per "All Teams" page
 st.title("🏛️ NASEA Re-entry Leaderboard")
 st.caption("Lowest score wins. Updates automatically.")
 
-@st.cache_data(ttl=5)
+@st.cache_data(ttl=15)
 def load_sheet(csv_url: str) -> pd.DataFrame:
     return pd.read_csv(csv_url)
 
