@@ -144,7 +144,7 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
 
          thead tr {
           background: #125670; /* Dark blue */
-        }}
+        }
 
           th {{
             text-align: left;
