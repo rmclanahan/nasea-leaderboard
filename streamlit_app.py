@@ -1,6 +1,7 @@
 import math
 from datetime import datetime
 
+import streamlit.components.v1 as components
 import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
@@ -95,158 +96,123 @@ def esc_html(s: str) -> str:
 
 def render_leaderboard_table(df_view: pd.DataFrame) -> None:
     """
-    Render a compact fixed-width table for projector display.
-    Uses conference colors + fonts:
-      - Raleway for titles
-      - Muli for body text
+    Render a compact fixed-width table for projector display using an HTML component.
+    This avoids Streamlit escaping issues.
     """
+    def esc(s: str) -> str:
+        return (
+            str(s)
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+        )
+
     rows_html = "\n".join(
         f"""
         <tr>
           <td class="rank">{int(r['Rank'])}</td>
-          <td class="team">{esc_html(r['Team'])}</td>
-          <td class="score">{esc_html(r['Score'])}</td>
-          <td class="status">{esc_html(r['Status'])}</td>
+          <td class="team">{esc(r['Team'])}</td>
+          <td class="score">{esc(r['Score'])}</td>
+          <td class="status">{esc(r['Status'])}</td>
         </tr>
         """
         for _, r in df_view.iterrows()
     )
 
     html = f"""
-    <style>
-      /* Import fonts */
-      @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&family=Muli:wght@300;400;600;700&display=swap');
+    <html>
+      <head>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@600;700;800&family=Muli:wght@300;400;600;700&display=swap');
 
-      /* Page background & default text */
-      .stApp {{
-        background: {DARK_BLUE};
-        color: {LIGHT_GREY};
-      }}
+          body {{
+            margin: 0;
+            padding: 0;
+            background: {DARK_BLUE};
+            color: {LIGHT_GREY};
+            font-family: 'Muli', sans-serif;
+          }}
 
-      /* Streamlit default content padding tweaks (optional) */
-      .block-container {{
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-      }}
+          table.lb {{
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            overflow: hidden;
+          }}
 
-      /* Titles */
-      h1, h2, h3, h4 {{
-        font-family: 'Raleway', sans-serif !important;
-        color: {LIGHT_GREY} !important;
-        margin-bottom: 0.5rem;
-      }}
+          thead tr {{
+            background: rgba(245, 183, 26, 0.20);
+          }}
 
-      /* Body text */
-      p, div, span, label {{
-        font-family: 'Muli', sans-serif !important;
-        color: {LIGHT_GREY};
-      }}
+          th {{
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 2px solid rgba(224, 228, 236, 0.25);
+            white-space: nowrap;
+            font-family: 'Raleway', sans-serif;
+            font-weight: 800;
+            color: {LIGHT_GREY};
+          }}
 
-      /* Highlight the caption line */
-      .nasea-caption {{
-        font-family: 'Muli', sans-serif !important;
-        color: {LIGHT_GREY};
-        opacity: 0.92;
-        margin-top: -0.25rem;
-        margin-bottom: 1rem;
-      }}
+          td {{
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(224, 228, 236, 0.14);
+            vertical-align: middle;
+          }}
 
-      /* Leaderboard table */
-      table.lb {{
-        width: 100%;
-        border-collapse: collapse;
-        font-family: 'Muli', sans-serif;
-        font-size: 24px; /* projector-friendly */
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 14px;
-        overflow: hidden;
-      }}
+          tbody tr:nth-child(odd) {{
+            background: rgba(255, 255, 255, 0.03);
+          }}
 
-      table.lb thead tr {{
-        background: rgba(245, 183, 26, 0.20); /* ORANGE tint */
-      }}
+          tbody tr:nth-child(even) {{
+            background: rgba(255, 255, 255, 0.01);
+          }}
 
-      table.lb th {{
-        text-align: left;
-        padding: 12px 14px;
-        border-bottom: 2px solid rgba(224, 228, 236, 0.25);
-        white-space: nowrap;
-        font-family: 'Raleway', sans-serif;
-        font-weight: 800;
-        color: {LIGHT_GREY};
-      }}
+          td.rank, th.rank {{
+            width: 4ch;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+          }}
 
-      table.lb td {{
-        padding: 12px 14px;
-        border-bottom: 1px solid rgba(224, 228, 236, 0.14);
-        vertical-align: middle;
-      }}
+          td.score, th.score {{
+            width: 14ch;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+          }}
 
-      table.lb tbody tr:nth-child(odd) {{
-        background: rgba(255, 255, 255, 0.03);
-      }}
-
-      table.lb tbody tr:nth-child(even) {{
-        background: rgba(255, 255, 255, 0.01);
-      }}
-
-      td.rank, th.rank {{
-        width: 4ch;           /* narrow */
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-      }}
-
-      td.score, th.score {{
-        width: 14ch;          /* "$15,000,000" fits */
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-      }}
-
-      td.status, th.status {{
-        width: 14ch;
-        white-space: nowrap;
-      }}
-
-      td.team, th.team {{
-        width: auto;
-      }}
-
-      /* Small footer/caption */
-      .lb-meta {{
-        font-family: 'Muli', sans-serif;
-        color: {LIGHT_GREY};
-        opacity: 0.92;
-        margin: 0.5rem 0 1rem 0;
-      }}
-
-      /* Accent for key numbers */
-      .accent {{
-        color: {ORANGE};
-        font-weight: 700;
-      }}
-    </style>
-
-    <table class="lb">
-      <thead>
-        <tr>
-          <th class="rank">#</th>
-          <th class="team">Team</th>
-          <th class="score">Score</th>
-          <th class="status">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows_html}
-      </tbody>
-    </table>
+          td.status, th.status {{
+            width: 14ch;
+            white-space: nowrap;
+          }}
+        </style>
+      </head>
+      <body>
+        <table class="lb">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th class="team">Team</th>
+              <th class="score">Score</th>
+              <th class="status">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows_html}
+          </tbody>
+        </table>
+      </body>
+    </html>
     """
-    st.markdown(html, unsafe_allow_html=True)
 
+    # Height: enough for ~PAGE_SIZE rows at 24px font. Tune if needed.
+    components.html(html, height=60 + (PAGE_SIZE * 46), scrolling=False)
 
 # -----------------------
 # Read data (Published CSV)
 # -----------------------
-st.title("🏛️ NASEA Re-entry Leaderboard")
+st.title("🥚 NASEA Re-entry Leaderboard 🥚")
 st.markdown(
     "<div class='nasea-caption'>Lowest score wins. Scores shown as familiar large numbers in $ (even though teams enter cost in $K). Updates automatically.</div>",
     unsafe_allow_html=True,
