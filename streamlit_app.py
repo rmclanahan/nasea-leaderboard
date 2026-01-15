@@ -73,12 +73,13 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 st.title("🏛️ NASEA Re-entry Leaderboard")
 st.caption("Lowest score wins. Updates automatically.")
 
-conn = st.connection("gsheets", type="gsheets")
+@st.cache_data(ttl=5)
+def load_sheet(csv_url: str) -> pd.DataFrame:
+    # Google “published to web” CSV can be read directly by pandas.
+    return pd.read_csv(csv_url)
 
-# Read the worksheet that Google Forms writes into.
-# Usually: "Form Responses 1"
-raw = conn.read(worksheet="Form Responses 1", ttl=0)  # ttl=0 forces fresh reads
-df = pd.DataFrame(raw)
+csv_url = st.secrets["leaderboard"]["csv_url"]
+df = load_sheet(csv_url)
 
 if df.empty:
     st.info("No submissions yet.")
