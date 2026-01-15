@@ -142,9 +142,9 @@ def render_leaderboard_table(df_view: pd.DataFrame) -> None:
             overflow: hidden;
           }}
 
-          thead tr {{
-            background: rgba(245, 183, 26, 0.20);
-          }}
+         thead tr {
+          background: #125670; /* Dark blue */
+        }}
 
           th {{
             text-align: left;
