@@ -3,7 +3,6 @@ from datetime import datetime
 
 import pandas as pd
 import streamlit as st
-from st_gsheets_connection import GSheetsConnection
 from streamlit_autorefresh import st_autorefresh
 
 # -----------------------
@@ -74,7 +73,7 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 st.title("🏛️ NASEA Re-entry Leaderboard")
 st.caption("Lowest score wins. Updates automatically.")
 
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn = st.connection("gsheets", type="gsheets")
 
 # Read the worksheet that Google Forms writes into.
 # Usually: "Form Responses 1"
