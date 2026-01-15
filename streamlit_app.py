@@ -42,9 +42,9 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 def compute_score(cost: float, outcome: str, em_completed: str) -> float:
     o = str(outcome).strip().lower()
     penalty = 0
-    if o == "cracked":
+    if o == "Cracked Egg":
         penalty = 1_000_000
-    elif o == "broken":
+    elif o == "Broken Egg":
         penalty = 10_000_000
 
     refund = 10_000 if str(em_completed).strip().lower() in {"yes", "y", "true"} else 0
