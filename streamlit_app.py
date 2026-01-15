@@ -40,11 +40,11 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def compute_score(cost: float, outcome: str, em_completed: str) -> float:
-    """Lower is better."""
+    o = str(outcome).strip().lower()
     penalty = 0
-    if outcome == "Cracked":
+    if o == "cracked":
         penalty = 1_000_000
-    elif outcome == "Broken":
+    elif o == "broken":
         penalty = 10_000_000
 
     refund = 10_000 if str(em_completed).strip().lower() in {"yes", "y", "true"} else 0
